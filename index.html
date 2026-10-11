@@ -131,7 +131,7 @@ ol.list{list-style:none;margin:0;padding:0;display:grid}
 </head>
 <body>
 <header>
-  <div class="brand"><h1><span>渝蓉行</span></h1><small>10/25 – 11/1 · v16</small></div>
+  <div class="brand"><h1><span>渝蓉行</span></h1><small>10/25 – 11/1 · v17</small></div>
   <nav class="tabs" id="tabs" role="tablist" aria-label="日期"></nav>
 </header>
 <main id="main"></main>
@@ -337,6 +337,7 @@ function renderTabs(){
 function stopCard(it,dayKey,idx){
   const key=dayKey+":"+idx, isDone=!!done[key];
   const sid=it.n?` id="stop-${it.n}"`:"";
+  const start=idx===0; // 每天的起點（出發的飯店／抵達的機場）不需要叫車、路線
   const badge=it.b?`<div class="num b" aria-hidden="true">${it.b}</div>`:it.h?'<div class="num h" aria-hidden="true">宿</div>':it.f?'<div class="num f" aria-hidden="true">✈</div>':`<button type="button" class="num${it.food?" food":""}" data-done aria-pressed="${isDone}" aria-label="第 ${it.n} 站，點一下標記已去過">${it.n}</button>`;
   const addr=it.addr?`<div class="addr">${esc(it.addr)}</div>`:"";
   return `<li class="stop${isDone?" done":""}"${sid} data-key="${key}">
@@ -344,8 +345,8 @@ function stopCard(it,dayKey,idx){
     <div class="title"><div class="t">${esc(it.t||"")}</div>
       <div class="nrow"><h3>${esc(it.name)}</h3>
         <div class="acts">
-          <a class="act main" href="${it.near?amapNear(it.kw,it.ll):amapSearch(it.kw,it.c)}" data-kind="${it.near?"near":"search"}" data-kw="${esc(it.kw)}" data-ll="${it.ll}" target="_blank" rel="noopener">高德叫車</a>
-          <a class="act" href="${amapNav(it)}" data-kind="nav" data-kw="${esc(it.kw)}" data-name="${esc(it.kw)}" data-ll="${it.ll}" target="_blank" rel="noopener">路線</a>
+          ${start?"":`<a class="act main" href="${it.near?amapNear(it.kw,it.ll):amapSearch(it.kw,it.c)}" data-kind="${it.near?"near":"search"}" data-kw="${esc(it.kw)}" data-ll="${it.ll}" target="_blank" rel="noopener">高德叫車</a>
+<a class="act" href="${amapNav(it)}" data-kind="nav" data-kw="${esc(it.kw)}" data-name="${esc(it.kw)}" data-ll="${it.ll}" target="_blank" rel="noopener">路線</a>`}
           <button class="act" type="button" data-near aria-expanded="false">周邊</button>
         </div></div>
       ${it.d?`<p>${esc(it.d)}</p>`:""}${addr}</div>
