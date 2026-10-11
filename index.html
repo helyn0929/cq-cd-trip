@@ -14,7 +14,7 @@
 /* Layout: phone-first travel log — day tabs on top, one card per stop with Amap actions */
 :root{
   --bg:#f1f3ee; --card:#fdfdfa; --ink:#1d2826; --muted:#5c6a66; --line:#d8ded8;
-  --route:#cf3b2b; --tag:#ffd84a; --tag-ink:#1f1a08; --amap:#1a73e8; --ok:#2f8a5b;
+  --route:#cf3b2b; --tag:#ffd84a; --tag-ink:#1f1a08; --amap:#1a73e8; --ok:#2f8a5b; --food:#e67a1c; --food-soft:#ffd9b0;
   --land:#eceee3; --water:#a6d0e6; --water-edge:#86b8d4; --park:#cfe3c1; --road:#fbfaf4; --road-case:#c2bba3; --metro:#5f9e83; --county:#c4c9b6; --sc:#f2efe2; --cq:#e7ecdf;
   --paper:var(--card); --body:var(--font);
   --font:-apple-system,"PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;
@@ -22,10 +22,10 @@
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#111715; --card:#1a2220; --ink:#e5ece9; --muted:#97a6a1; --line:#2c3633;
-  --route:#ff6a55; --tag:#f0c844; --tag-ink:#1a1506; --amap:#5a9bff; --ok:#5cc28c; --land:#1a211e; --water:#1f4459; --water-edge:#2a5873; --park:#203325; --road:#3d4743; --road-case:#232b28; --metro:#4b8a6e; --county:#323c37; --sc:#1d2421; --cq:#18201c; color-scheme:dark}}
+  --route:#ff6a55; --tag:#f0c844; --tag-ink:#1a1506; --amap:#5a9bff; --ok:#5cc28c; --food:#ff9a45; --food-soft:#ffc58f; --land:#1a211e; --water:#1f4459; --water-edge:#2a5873; --park:#203325; --road:#3d4743; --road-case:#232b28; --metro:#4b8a6e; --county:#323c37; --sc:#1d2421; --cq:#18201c; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#111715; --card:#1a2220; --ink:#e5ece9; --muted:#97a6a1; --line:#2c3633;
-  --route:#ff6a55; --tag:#f0c844; --tag-ink:#1a1506; --amap:#5a9bff; --ok:#5cc28c; --land:#1a211e; --water:#1f4459; --water-edge:#2a5873; --park:#203325; --road:#3d4743; --road-case:#232b28; --metro:#4b8a6e; --county:#323c37; --sc:#1d2421; --cq:#18201c; color-scheme:dark}
+  --route:#ff6a55; --tag:#f0c844; --tag-ink:#1a1506; --amap:#5a9bff; --ok:#5cc28c; --food:#ff9a45; --food-soft:#ffc58f; --land:#1a211e; --water:#1f4459; --water-edge:#2a5873; --park:#203325; --road:#3d4743; --road-case:#232b28; --metro:#4b8a6e; --county:#323c37; --sc:#1d2421; --cq:#18201c; color-scheme:dark}
 *{box-sizing:border-box}
 html,body{margin:0}
 body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.5;-webkit-text-size-adjust:100%}
@@ -53,7 +53,8 @@ ol.list{list-style:none;margin:0;padding:0;display:grid}
 .stop.done .title,.stop.done .acts{opacity:.45}
 .num{width:28px;height:28px;border-radius:50%;background:var(--route);color:#fff;font:700 14px/28px var(--mono);text-align:center;border:0;padding:0;cursor:pointer;position:relative}
 .num.h{background:var(--ink);color:var(--bg);border-radius:6px;font-family:var(--font);font-size:13px;cursor:default}
-.num.b{background:var(--tag);color:var(--tag-ink);border-radius:6px;font-family:var(--font);font-size:13px;cursor:default}
+.num.b{background:var(--food);color:#fff;border-radius:6px;font-family:var(--font);font-size:13px;cursor:default}
+.num.food{background:var(--food)}
 .num.f{background:var(--amap);border-radius:6px;font-family:var(--font);font-size:13px;cursor:default}
 .stop.done .num:not(.h):not(.f){background:var(--ok)}
 .stop.done .num:not(.h):not(.f)::after{content:"✓";position:absolute;inset:0;background:var(--ok);border-radius:50%;font-family:var(--font)}
@@ -108,7 +109,8 @@ ol.list{list-style:none;margin:0;padding:0;display:grid}
 .r-hoteltx{fill:var(--paper);font:700 15px var(--body);text-anchor:middle;dominant-baseline:central}
 .r-city{fill:var(--paper);stroke:var(--ink);stroke-width:3.5}
 .r-tag{fill:var(--tag)} .r-tagtx{fill:var(--tag-ink);font:700 22px var(--body);dominant-baseline:central}
-.r-bf{fill:var(--tag);stroke:var(--paper);stroke-width:2.5} .r-bftx{fill:var(--tag-ink);font:700 15px var(--body);text-anchor:middle;dominant-baseline:central}
+.r-bf{fill:var(--food);stroke:var(--paper);stroke-width:2.5} .r-bftx{fill:#fff;font:700 15px var(--body);text-anchor:middle;dominant-baseline:central}
+.r-pin.food{fill:var(--food)} .r-tag.food{fill:var(--food-soft)}
 .r-tag.hotel{fill:var(--ink)} .r-tagtx.hotel{fill:var(--paper)}
 .r-scale{stroke:var(--ink);stroke-width:2.5;fill:none}
 .r-scaletx{fill:var(--muted);font:700 15px var(--mono)} .r-n{fill:var(--ink)}
@@ -145,7 +147,7 @@ const DAYS=[
   items:[
    {...HOTEL_CQ,t:"出發",d:""},
    {leg:"叫車 10 分"},
-   {n:1,t:"08:30",name:"花市豌雜麵（民生路總店）",kw:"花市豌杂面 民生路总店",c:"重庆",ll:[106.5703,29.5572],d:"早餐，重慶小麵"},
+   {food:1,n:1,t:"08:30",name:"花市豌雜麵（民生路總店）",kw:"花市豌杂面 民生路总店",c:"重庆",ll:[106.5703,29.5572],d:"早餐，重慶小麵"},
    {leg:"叫車 8 分"},
    {n:2,t:"09:15",name:"山城步道",kw:"山城步道",c:"重庆",ll:[106.564,29.5527],d:"長江側懸崖棧道"},
    {leg:"步行 8 分",walk:1},
@@ -161,7 +163,7 @@ const DAYS=[
    {leg:"叫車 20 分"},
    {n:8,t:"17:15",name:"戴家巷崖壁步道",kw:"戴家巷崖壁步道",c:"重庆",ll:[106.5745,29.5643],d:"嘉陵江夕陽、懸崖咖啡"},
    {leg:"叫車 12 分"},
-   {n:9,t:"19:00",name:"洞亭鮮火鍋（兩路口店）",kw:"洞亭鲜火锅 两路口店",c:"重庆",ll:[106.5462,29.553],d:"防空洞火鍋，先排號"},
+   {food:1,n:9,t:"19:00",name:"洞亭鮮火鍋（兩路口店）",kw:"洞亭鲜火锅 两路口店",c:"重庆",ll:[106.5462,29.553],d:"防空洞火鍋，先排號"},
    {leg:"叫車 12 分"},
    {n:10,t:"21:00",name:"洪崖洞夜景",kw:"洪崖洞民俗风貌区",c:"重庆",ll:[106.5792,29.5628],d:"上千廝門大橋拍全景"},
    {leg:"步行 15 分回飯店",walk:1}
@@ -187,7 +189,7 @@ const DAYS=[
    {leg:"叫車 20 分"},
    {n:8,t:"19:00",name:"觀音橋步行街",kw:"观音桥步行街",c:"重庆",ll:[106.5318,29.5757],d:"3D 大螢幕；北倉文創就在旁邊"},
    {leg:"叫車 10 分"},
-   {n:9,t:"20:00",name:"地下之城老火鍋",kw:"地下之城老火锅",c:"重庆",ll:[106.5432,29.5795],d:""},
+   {food:1,n:9,t:"20:00",name:"地下之城老火鍋",kw:"地下之城老火锅",c:"重庆",ll:[106.5432,29.5795],d:""},
    {leg:"步行 5 分",walk:1},
    {n:10,t:"22:00",name:"不夜九街",kw:"九街 江北",c:"重庆",ll:[106.5452,29.5822],d:"酒吧、Livehouse"},
    {leg:"叫車 15 分回飯店"}
@@ -229,14 +231,14 @@ const DAYS=[
    {leg:"步行 5 分",walk:1},
    {n:3,t:"13:30",name:"南橋／灌縣古城",kw:"都江堰南桥",c:"成都",ll:[103.623,30.993],d:"午餐"},
    {leg:"城際＋地鐵 約 1.5 小時"},
-   {n:4,t:"19:00",name:"九眼橋河畔",kw:"九眼桥",c:"成都",ll:[104.088,30.642],d:"晚餐、小酒館"}
+   {food:1,n:4,t:"19:00",name:"九眼橋河畔",kw:"九眼桥",c:"成都",ll:[104.088,30.642],d:"晚餐、小酒館"}
   ]},
  {d:"2026-10-31",tab:"10/31",city:"成都",title:"喝茶、文殊院、蘭桂坊",meta:"週六 · 萬聖節",
   note:"早上先到撫琴吃朱碧瓊肥腸粉加結子，再去人民公園喝茶，回頭逛飯店旁的文殊院，下午太古里，晚上九眼橋晚餐、蘭桂坊派對。",
   items:[
    {...HOTEL_CD,t:"08:15",d:"出發"},
    {leg:"叫車 12 分"},
-   {b:"早",t:"08:30",name:"朱碧瓊肥腸粉",kw:"朱碧琼肥肠粉",c:"成都",ll:[104.0430,30.6745],d:"撫琴小區菜市場旁的老店，點肥腸粉加結子",addr:"成都市金牛区抚琴街南三巷"},
+   {food:1,b:"早",t:"08:30",name:"朱碧瓊肥腸粉",kw:"朱碧琼肥肠粉",c:"成都",ll:[104.0430,30.6745],d:"撫琴小區菜市場旁的老店，點肥腸粉加結子",addr:"成都市金牛区抚琴街南三巷"},
    {leg:"叫車 12 分"},
    {n:1,t:"10:00",name:"人民公園 鶴鳴茶社",kw:"鹤鸣茶社",c:"成都",ll:[104.059,30.6585],d:""},
    {leg:"叫車 10 分"},
@@ -244,7 +246,7 @@ const DAYS=[
    {leg:"叫車 12 分"},
    {n:3,t:"15:00",name:"太古里／大慈寺",kw:"成都远洋太古里",c:"成都",ll:[104.0835,30.6545],d:"順便買變裝小物"},
    {leg:"步行 15 分",walk:1},
-   {n:4,t:"18:30",name:"九眼橋晚餐",kw:"九眼桥",c:"成都",ll:[104.088,30.642],d:""},
+   {food:1,n:4,t:"18:30",name:"九眼橋晚餐",kw:"九眼桥",c:"成都",ll:[104.088,30.642],d:""},
    {leg:"步行 8 分",walk:1},
    {n:5,t:"21:00",name:"蘭桂坊 萬聖節派對",kw:"成都兰桂坊",c:"成都",ll:[104.0905,30.6478],d:"9:30 前入場"},
    {leg:"叫車 10 分回飯店"}
@@ -288,7 +290,7 @@ function renderTabs(){
 function stopCard(it,dayKey,idx){
   const key=dayKey+":"+idx, isDone=!!done[key];
   const sid=it.n?` id="stop-${it.n}"`:"";
-  const badge=it.b?`<div class="num b" aria-hidden="true">${it.b}</div>`:it.h?'<div class="num h" aria-hidden="true">宿</div>':it.f?'<div class="num f" aria-hidden="true">✈</div>':`<button type="button" class="num" data-done aria-pressed="${isDone}" aria-label="第 ${it.n} 站，點一下標記已去過">${it.n}</button>`;
+  const badge=it.b?`<div class="num b" aria-hidden="true">${it.b}</div>`:it.h?'<div class="num h" aria-hidden="true">宿</div>':it.f?'<div class="num f" aria-hidden="true">✈</div>':`<button type="button" class="num${it.food?" food":""}" data-done aria-pressed="${isDone}" aria-label="第 ${it.n} 站，點一下標記已去過">${it.n}</button>`;
   const addr=it.addr?`<div class="addr">${esc(it.addr)}</div>`:"";
   return `<li class="stop${isDone?" done":""}"${sid} data-key="${key}">
     ${badge}
@@ -313,7 +315,7 @@ function render(){
   history.replaceState(null,"","#d"+day.d.replace(/-/g,""));
   main.innerHTML=`<div class="dayhead"><div class="meta">${esc(day.meta)}</div><h2>${esc(day.title)}</h2><p>${esc(day.note)}</p></div>
   <div class="mapwrap" id="map"></div>
-  <div class="maphint"><span>點地圖號碼跳到行程・點清單號碼標記已去過</span><button type="button" id="zoom" aria-pressed="false">放大地圖</button></div>
+  <div class="maphint"><span><b style="color:var(--food)">●</b> 橘色是美食・點號碼跳到行程</span><button type="button" id="zoom" aria-pressed="false">放大地圖</button></div>
   <ol class="list">${day.items.map((it,i)=>it.leg?`<li class="leg${it.walk?" walk":""}">${esc(it.leg)}</li>`:stopCard(it,day.d,i)).join("")}</ol>
   <div class="info"><h4>怎麼用高德叫車</h4><ul>
     <li>按「高德叫車」會打開高德並搜尋這個地點，點選正確的結果後按「打車」，就會以它為目的地叫車。</li>

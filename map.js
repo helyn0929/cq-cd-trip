@@ -77,7 +77,7 @@ function drawMap(day,onPin){
     if(p.k==="hotel"){el("rect",{x:x-14,y:y-14,width:28,height:28,rx:4,class:"r-hotel"},g);const t=el("text",{x,y:y+1,class:"r-hoteltx"},g);t.textContent="宿";off=21}
     else if(p.k==="bf"){el("rect",{x:x-14,y:y-14,width:28,height:28,rx:4,class:"r-bf"},g);const t=el("text",{x,y:y+1,class:"r-bftx"},g);t.textContent="早";off=21}
     else if(p.k==="city"){el("circle",{cx:x,cy:y,r:10,class:"r-city"},g);off=17}
-    else{el("circle",{cx:x,cy:y,r:M.PR,class:"r-pin"},g);const t=el("text",{x,y:y+1,class:"r-pinnum"},g);t.textContent=p.n;
+    else{el("circle",{cx:x,cy:y,r:M.PR,class:"r-pin"+(p.food?" food":"")},g);const t=el("text",{x,y:y+1,class:"r-pinnum"},g);t.textContent=p.n;
       if(onPin){g.style.cursor="pointer";g.addEventListener("click",ev=>{ev.stopPropagation();onPin(p.n)})}}
     if(p.nolabel)return;
     const name=p.k==="hotel"||p.k==="bf"?p.name:shortName(p.name), w=tw(name,M.FT)+16, th=32;
@@ -86,7 +86,7 @@ function drawMap(day,onPin){
     let best=null;for(const q of order){const c=cand(q),b={x:c.x,y:c.y,w,h:th},k=cost(b);if(!best||k<best.k-1)best={...b,k};if(k===0)break}
     if(best.k>w*th*.25&&p.k!=="hotel")return;
     boxes.push(best);let bx=Math.max(4,Math.min(W-w-4,best.x)),by=best.y;
-    const kind=p.k==="hotel"?" hotel":"";
+    const kind=p.k==="hotel"?" hotel":(p.food||p.k==="bf")?" food":"";
     el("rect",{x:bx,y:by,width:w,height:th,rx:3,class:"r-tag"+kind},g);
     const t=el("text",{x:bx+8,y:by+th/2+1,class:"r-tagtx"+kind},g);t.textContent=name;
   });
