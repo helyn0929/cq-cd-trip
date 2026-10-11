@@ -131,7 +131,7 @@ ol.list{list-style:none;margin:0;padding:0;display:grid}
 </head>
 <body>
 <header>
-  <div class="brand"><h1><span>渝蓉行</span></h1><small>10/25 – 11/1 · v17</small></div>
+  <div class="brand"><h1><span>渝蓉行</span></h1><small>10/25 – 11/1 · v18</small></div>
   <nav class="tabs" id="tabs" role="tablist" aria-label="日期"></nav>
 </header>
 <main id="main"></main>
@@ -364,14 +364,7 @@ function render(){
   main.innerHTML=`<div class="dayhead"><div class="meta">${esc(day.meta)}</div><h2>${esc(day.title)}${day.cw?'<span class="cwb">🚶 City Walk</span>':""}</h2><p>${esc(day.note)}</p></div>
   <div class="mapwrap" id="map"></div>
   <div class="maphint"><span><b style="color:var(--food)">●</b> 美食　<b style="color:var(--walk)">┅</b> 步行・點號碼跳到行程</span><button type="button" id="zoom" aria-pressed="false">放大地圖</button></div>
-  <ol class="list">${day.items.map((it,i)=>it.leg?`<li class="leg${it.walk?" walk":""}">${it.walk?"🚶 ":""}${esc(it.leg)}</li>`:stopCard(it,day.d,i)).join("")}</ol>
-  <div class="info"><h4>怎麼用高德</h4><ul>
-    <li>手機要先安裝「高德地圖」App 並登入。按按鈕會直接打開 App；沒裝 App 才會改開網頁版，網頁版不能叫車。</li>
-    <li>「高德叫車」：在高德裡搜尋這個地點，點正確的結果，再按「打車」就能叫車。</li>
-    <li>「路線」：直接規劃開車路線到這個地點（座標是概略的，要精準請用「高德叫車」）。</li>
-    <li>「周邊」：找附近的美食、咖啡、廁所、地鐵站。</li>
-    <li>叫車要在大陸境內才叫得到車，先在高德綁好支付寶或微信支付。</li>
-  </ul></div>`;
+  <ol class="list">${day.items.map((it,i)=>it.leg?`<li class="leg${it.walk?" walk":""}">${it.walk?"🚶 ":""}${esc(it.leg)}</li>`:stopCard(it,day.d,i)).join("")}</ol>`;
   try{
     const md=MAPDAYS.find(m=>m.id==="d"+cur), box=document.getElementById("map");
     box.appendChild(drawMap(md,n=>{const li=document.getElementById("stop-"+n);if(!li)return;
