@@ -50,6 +50,7 @@ function drawMap(day,onPin){
   const svg=el("svg",{viewBox:`0 0 ${W} ${H}`,role:"img","aria-label":`${day.title} 路線示意圖`});
   const mk=el("marker",{id:"ah-"+day.id,viewBox:"0 0 10 10",refX:"7",refY:"5",markerWidth:"5",markerHeight:"5",orient:"auto-start-reverse"},el("defs",{},svg));
   el("path",{d:"M0,0 L10,5 L0,10 z",class:"r-head"},mk);
+  const mkw=el("marker",{id:"ahw-"+day.id,viewBox:"0 0 10 10",refX:"7",refY:"5",markerWidth:"5",markerHeight:"5",orient:"auto-start-reverse"},svg.querySelector("defs"));el("path",{d:"M0,0 L10,5 L0,10 z",class:"r-head walk"},mkw);
   const mPerPx=111000/s;
   drawBase(svg,day,P,s,W,H,mPerPx);
   // ---- 版面：先把太近的點推開，再放標籤，避免重疊 ----
@@ -79,11 +80,11 @@ function drawMap(day,onPin){
     const trim=(xa,ya,xb,yb,r)=>{const l=Math.hypot(xb-xa,yb-ya)||1;return [xa+(xb-xa)/l*r,ya+(yb-ya)/l*r]};
     const [a1,b1]=trim(x1,y1,cx,cy,M.PR+4),[a2,b2]=trim(x2,y2,cx,cy,M.PR+5);
     const d=`M${a1.toFixed(1)},${b1.toFixed(1)} Q${cx.toFixed(1)},${cy.toFixed(1)} ${a2.toFixed(1)},${b2.toFixed(1)}`;
-    el("path",{d,class:"r-leg"+(mode==="walk"?" walk":""),"stroke-width":mode==="rail"?6.5:4.2,"marker-end":`url(#ah-${day.id})`},legG);
+    el("path",{d,class:"r-leg"+(mode==="walk"?" walk":""),"stroke-width":mode==="rail"?6.5:4.2,"marker-end":`url(#${mode==="walk"?"ahw-":"ah-"}${day.id})`},legG);
     if(mode==="rail")el("path",{d,class:"r-rail-in"},legG);
     const Q=t=>[(1-t)*(1-t)*x1+2*(1-t)*t*cx+t*t*x2,(1-t)*(1-t)*y1+2*(1-t)*t*cy+t*t*y2];
     const n=Math.max(2,Math.ceil(L/12));for(let k=1;k<n;k++){const [px,py]=Q(k/n);soft.push({x:px-5,y:py-5,w:10,h:10})}
-    if(label&&!o.hide)legLabels.push({Q,nx,ny,sg:Math.sign(bend||1),label});
+    if(label&&!o.hide)legLabels.push({Q,nx,ny,sg:Math.sign(bend||1),label,walk:mode==="walk"});
   });
   // 點
   const DIRS=[["r",1,0],["l",-1,0],["t",0,-1],["b",0,1],["tr",1,-1],["br",1,1],["tl",-1,-1],["bl",-1,1]];
@@ -129,7 +130,7 @@ function drawMap(day,onPin){
       for(const t of [.5,.42,.58,.34,.66])for(const side of [l.sg,-l.sg])for(const d of [15,24]){
         const [px,py]=l.Q(t), cx=px+l.nx*side*d, cy=py+l.ny*side*d, b={x:cx-w/2,y:cy-h/2,w,h};
         if(hcost(b)>0)continue;
-        hard.push(b);const e=el("text",{x:cx.toFixed(1),y:(cy+fs*.35).toFixed(1),class:"r-leglabel","text-anchor":"middle",style:`font-size:${fs}px`},labG);e.textContent=l.label;
+        hard.push(b);const e=el("text",{x:cx.toFixed(1),y:(cy+fs*.35).toFixed(1),class:"r-leglabel"+(l.walk?" walk":""),"text-anchor":"middle",style:`font-size:${fs}px`},labG);e.textContent=l.label;
         return;
       }
     }
