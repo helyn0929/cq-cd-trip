@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1d2826">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="渝蓉行">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-180.png">
+<title>渝蓉行</title>
+<style>
+/* Layout: phone-first travel log — day tabs on top, one card per stop with Amap actions */
+:root{
+  --bg:#f1f3ee; --card:#fdfdfa; --ink:#1d2826; --muted:#5c6a66; --line:#d8ded8;
+  --route:#cf3b2b; --tag:#ffd84a; --tag-ink:#1f1a08; --amap:#1a73e8; --ok:#2f8a5b;
+  --font:-apple-system,"PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#111715; --card:#1a2220; --ink:#e5ece9; --muted:#97a6a1; --line:#2c3633;
+  --route:#ff6a55; --tag:#f0c844; --tag-ink:#1a1506; --amap:#5a9bff; --ok:#5cc28c; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111715; --card:#1a2220; --ink:#e5ece9; --muted:#97a6a1; --line:#2c3633;
+  --route:#ff6a55; --tag:#f0c844; --tag-ink:#1a1506; --amap:#5a9bff; --ok:#5cc28c; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.5;-webkit-text-size-adjust:100%}
+header{position:sticky;top:0;z-index:10;background:var(--bg);padding:calc(env(safe-area-inset-top,0px) + 10px) 16px 0;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.brand h1{margin:0;font-size:22px;font-weight:900;letter-spacing:.02em}
+.brand h1 span{background:var(--tag);color:var(--tag-ink);padding:0 6px;border-radius:2px}
+.brand small{color:var(--muted);font-family:var(--mono);font-size:12px}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding:10px 0 10px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:0 0 auto;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:12px;padding:6px 11px;font:inherit;font-size:13px;line-height:1.25;text-align:left;cursor:pointer}
+.tab b{display:block;font-family:var(--mono);font-size:13px}
+.tab span{color:var(--muted);font-size:12px}
+.tab[aria-selected="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.tab[aria-selected="true"] span{color:var(--bg);opacity:.75}
+.tab .today{display:inline-block;margin-left:4px;font-size:10px;background:var(--route);color:#fff;border-radius:6px;padding:0 4px;vertical-align:1px}
+main{padding:14px 16px calc(env(safe-area-inset-bottom,0px) + 40px);max-width:640px;margin:0 auto}
+.dayhead h2{margin:4px 0 2px;font-size:21px;font-weight:900;text-wrap:balance}
+.dayhead .meta{color:var(--muted);font-size:13px;font-family:var(--mono)}
+.dayhead p{margin:8px 0 14px;color:var(--muted);font-size:14.5px}
+ol.list{list-style:none;margin:0;padding:0;display:grid}
+.stop{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 12px 10px;display:grid;gap:8px}
+.stop.done{opacity:.55}
+.top{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:start}
+.num{width:26px;height:26px;border-radius:50%;background:var(--route);color:#fff;font:700 13px/26px var(--mono);text-align:center}
+.num.h{background:var(--ink);color:var(--card);border-radius:6px;font-family:var(--font);font-size:12px}
+.num.f{background:var(--amap);border-radius:6px;font-family:var(--font);font-size:12px}
+.title{min-width:0}
+.title .t{font-family:var(--mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.title h3{margin:0;font-size:17px;line-height:1.3}
+.title p{margin:3px 0 0;color:var(--muted);font-size:13.5px}
+.title .addr{font-size:12.5px;margin-top:4px;color:var(--muted)}
+.chk{appearance:none;width:24px;height:24px;border:2px solid var(--line);border-radius:7px;margin:1px 0 0;cursor:pointer;display:grid;place-content:center}
+.chk:checked{background:var(--ok);border-color:var(--ok)}
+.chk:checked::after{content:"✓";color:#fff;font-size:15px;font-weight:700}
+.btns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.btn{display:flex;align-items:center;justify-content:center;gap:5px;min-height:40px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;font-size:14px;font-weight:600;text-decoration:none;cursor:pointer;padding:0 6px;text-align:center;line-height:1.2}
+.btn.main{background:var(--amap);border-color:var(--amap);color:#fff}
+.btn:active{transform:scale(.98)}
+.btn:focus-visible,.tab:focus-visible,.chk:focus-visible,.chip:focus-visible{outline:2px solid var(--amap);outline-offset:2px}
+.near{display:flex;flex-wrap:wrap;gap:6px;padding-top:2px}
+.near[hidden]{display:none}
+.chip{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:5px 11px;font-size:13.5px;text-decoration:none}
+.leg{display:flex;align-items:center;gap:8px;padding:6px 0 6px 24px;color:var(--route);font-size:13px;font-weight:600}
+.leg::before{content:"";width:0;height:18px;border-left:2px solid var(--route)}
+.leg.walk::before{border-left-style:dashed}
+.info{margin-top:22px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-size:13.5px;color:var(--muted)}
+.info h4{margin:0 0 6px;color:var(--ink);font-size:14px}
+.info ul{margin:0;padding-left:18px}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 22px);transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:10px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.on{opacity:1}
+@media (prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><h1><span>渝蓉行</span></h1><small>10/25 – 11/1</small></div>
+  <nav class="tabs" id="tabs" role="tablist" aria-label="日期"></nav>
+</header>
+<main id="main"></main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+// ---- 行程資料 ----
+// kw = 高德搜尋關鍵字（簡體），c = 城市，ll = 大約座標 [經度, 緯度]（只用來搜周邊）
+const HOTEL_CQ={h:1,name:"重慶來福士洲際飯店",kw:"重庆来福士洲际酒店",c:"重庆",ll:[106.5862,29.5652],addr:"重庆市渝中区长江滨江路2号"};
+const HOTEL_CD={h:1,name:"錦投·古跡飯店（春熙路太古里店）",kw:"锦投古迹酒店 春熙路太古里店",c:"成都",ll:[104.0790,30.6690],addr:"成都市锦江区暑袜北一街145号"};
+const DAYS=[
+ {d:"2026-10-25",tab:"10/25",city:"重慶",title:"抵達重慶",meta:"週日 · 3U3784 台北松山 19:20 → 重慶 22:45",
+  note:"出關領行李約 30–40 分鐘，地鐵可能已收班，直接在 T3 排計程車或叫車，約 40 分鐘到飯店。",
+  items:[
+   {f:1,t:"22:45",name:"江北機場 T3 抵達",kw:"重庆江北国际机场T3航站楼",c:"重庆",ll:[106.644,29.727],d:"訂位代號 DJQJO3／NJG0BQ"},
+   {leg:"叫車 約 40 分"},
+   {...HOTEL_CQ,t:"約 00:00",d:"入住。訂房時備註會晚到"}
+  ]},
+ {d:"2026-10-26",tab:"10/26",city:"重慶",title:"渝中半島＋南岸",meta:"週一",
+  note:"早上走長江側崖壁，中午坐索道過江逛老街，傍晚回嘉陵江邊看夕陽，晚上火鍋＋洪崖洞夜景，走回飯店。",
+  items:[
+   {...HOTEL_CQ,t:"出發",d:""},
+   {leg:"叫車 10 分"},
+   {n:1,t:"08:30",name:"花市豌雜麵（民生路總店）",kw:"花市豌杂面 民生路总店",c:"重庆",ll:[106.5703,29.5572],d:"早餐，重慶小麵"},
+   {leg:"叫車 8 分"},
+   {n:2,t:"09:15",name:"山城步道",kw:"山城步道",c:"重庆",ll:[106.564,29.5527],d:"長江側懸崖棧道"},
+   {leg:"步行 8 分",walk:1},
+   {n:3,t:"10:30",name:"十八梯＋1941 防空洞",kw:"十八梯传统风貌区",c:"重庆",ll:[106.5738,29.5537],d:"防空洞開放時間先查"},
+   {leg:"叫車 12 分"},
+   {n:4,t:"11:45",name:"湖廣會館",kw:"湖广会馆",c:"重庆",ll:[106.588,29.5602],d:""},
+   {leg:"步行 10 分",walk:1},
+   {n:5,t:"13:00",name:"長江索道（新華路站）",kw:"长江索道 新华路站",c:"重庆",ll:[106.5862,29.5572],d:"4–5 分鐘過江"},
+   {leg:"索道 5 分"},
+   {n:6,t:"13:15",name:"龍門浩老街",kw:"龙门浩老街",c:"重庆",ll:[106.5945,29.553],d:"在上新街一帶吃午餐"},
+   {leg:"步行 8 分",walk:1},
+   {n:7,t:"15:00",name:"下浩里老街",kw:"下浩里",c:"重庆",ll:[106.5985,29.5488],d:"懸崖文創街區"},
+   {leg:"叫車 20 分"},
+   {n:8,t:"17:15",name:"戴家巷崖壁步道",kw:"戴家巷崖壁步道",c:"重庆",ll:[106.5745,29.5643],d:"嘉陵江夕陽、懸崖咖啡"},
+   {leg:"叫車 12 分"},
+   {n:9,t:"19:00",name:"洞亭鮮火鍋（兩路口店）",kw:"洞亭鲜火锅 两路口店",c:"重庆",ll:[106.5462,29.553],d:"防空洞火鍋，先排號"},
+   {leg:"叫車 12 分"},
+   {n:10,t:"21:00",name:"洪崖洞夜景",kw:"洪崖洞民俗风貌区",c:"重庆",ll:[106.5792,29.5628],d:"上千廝門大橋拍全景"},
+   {leg:"步行 15 分回飯店",walk:1}
+  ]},
+ {d:"2026-10-27",tab:"10/27",city:"重慶",title:"黃桷坪 → 鵝嶺 → 江北",meta:"週二",
+  note:"由南往北：黃桷坪喝茶看塗鴉，坐 2 號線到李子壩，鵝嶺、兩路口，晚上過江到觀音橋和九街。",
+  items:[
+   {...HOTEL_CQ,t:"出發",d:""},
+   {leg:"叫車 30 分"},
+   {n:1,t:"09:00",name:"交通茶館",kw:"交通茶馆 黄桷坪",c:"重庆",ll:[106.5135,29.5025],d:"80 年代老茶館"},
+   {leg:"步行 3 分",walk:1},
+   {n:2,t:"10:00",name:"黃桷坪塗鴉藝術街",kw:"黄桷坪涂鸦艺术街",c:"重庆",ll:[106.5168,29.5052],d:""},
+   {leg:"步行 5 分",walk:1},
+   {n:3,t:"11:00",name:"軍哥書屋（防空洞店）",kw:"军哥书屋 防空洞店",c:"重庆",ll:[106.5122,29.5078],d:"位置以高德為準"},
+   {leg:"叫車 10 分"},
+   {n:4,t:"12:30",name:"民主村",kw:"民主村 九龙坡",c:"重庆",ll:[106.5168,29.5228],d:"午餐＋紅磚社區"},
+   {leg:"2 號線 謝家灣 → 李子壩 約 25 分"},
+   {n:5,t:"14:30",name:"李子壩輕軌穿樓觀景平台",kw:"李子坝轻轨穿楼观景平台",c:"重庆",ll:[106.5312,29.556],d:""},
+   {leg:"步行 20 分",walk:1},
+   {n:6,t:"15:30",name:"鵝嶺貳廠文創公園",kw:"鹅岭二厂文创公园",c:"重庆",ll:[106.5378,29.5527],d:"愛情天台"},
+   {leg:"叫車 8 分"},
+   {n:7,t:"17:00",name:"羅斯福圖書館舊址",kw:"罗斯福图书馆旧址",c:"重庆",ll:[106.5475,29.5547],d:"今年 5 月重新開放"},
+   {leg:"叫車 20 分"},
+   {n:8,t:"19:00",name:"觀音橋步行街",kw:"观音桥步行街",c:"重庆",ll:[106.5318,29.5757],d:"3D 大螢幕；北倉文創就在旁邊"},
+   {leg:"叫車 10 分"},
+   {n:9,t:"20:00",name:"地下之城老火鍋",kw:"地下之城老火锅",c:"重庆",ll:[106.5432,29.5795],d:""},
+   {leg:"步行 5 分",walk:1},
+   {n:10,t:"22:00",name:"不夜九街",kw:"九街 江北",c:"重庆",ll:[106.5452,29.5822],d:"酒吧、Livehouse"},
+   {leg:"叫車 15 分回飯店"}
+  ]},
+ {d:"2026-10-28",tab:"10/28",city:"大足→成都",title:"大足石刻，轉往成都",meta:"週三 · 高鐵票在 12306 訂",
+  note:"退房後到重慶西或重慶北站，坐高鐵到大足南，看完寶頂山再坐高鐵到成都東。",
+  items:[
+   {...HOTEL_CQ,t:"08:00",d:"退房"},
+   {leg:"叫車到重慶西／重慶北站"},
+   {n:1,t:"09:30",name:"大足南站",kw:"大足南站",c:"重庆",ll:[105.7468,29.6565],d:""},
+   {leg:"叫車 25 分"},
+   {n:2,t:"10:15",name:"大足石刻 寶頂山",kw:"大足石刻 宝顶山景区",c:"重庆",ll:[105.805,29.754],d:"千手觀音、大臥佛，留約 3 小時"},
+   {leg:"叫車回大足南站，高鐵約 1 小時"},
+   {n:3,t:"16:30",name:"成都東站",kw:"成都东站",c:"成都",ll:[104.14,30.63],d:""},
+   {leg:"叫車 20 分"},
+   {...HOTEL_CD,t:"17:00",d:"入住，連住 4 晚"}
+  ]},
+ {d:"2026-10-29",tab:"10/29",city:"成都",title:"熊貓、杜甫草堂、後視鏡",meta:"週四",
+  note:"一早往城北看熊貓，下午到城西杜甫草堂和寬窄巷子，晚上到桐梓林的後視鏡。",
+  items:[
+   {...HOTEL_CD,t:"07:00",d:"出發"},
+   {leg:"叫車 30 分"},
+   {n:1,t:"07:30",name:"成都大熊貓繁育研究基地",kw:"成都大熊猫繁育研究基地",c:"成都",ll:[104.146,30.733],d:"門票提前實名預約"},
+   {leg:"叫車 40 分（途中午餐）"},
+   {n:2,t:"13:30",name:"杜甫草堂",kw:"杜甫草堂",c:"成都",ll:[104.029,30.66],d:""},
+   {leg:"叫車 15 分"},
+   {n:3,t:"16:30",name:"寬窄巷子",kw:"宽窄巷子",c:"成都",ll:[104.056,30.6645],d:"之後回飯店休息、晚餐"},
+   {leg:"叫車 20 分"},
+   {n:4,t:"20:30",name:"後視鏡女性俱樂部",kw:"后视镜女性俱乐部",c:"成都",ll:[104.0745,30.621],d:"清吧，人均約 ¥73；先看小紅書當週活動",addr:"成都市广和二街177号"}
+  ]},
+ {d:"2026-10-30",tab:"10/30",city:"成都",title:"都江堰一日",meta:"週五 · 城際列車在 12306 訂",
+  note:"地鐵 2 號線到犀浦站轉城際，半小時到都江堰；下午回市區，晚上九眼橋。",
+  items:[
+   {...HOTEL_CD,t:"08:00",d:"出發"},
+   {leg:"地鐵 2 號線 約 40 分"},
+   {n:1,t:"08:50",name:"犀浦站",kw:"犀浦站",c:"成都",ll:[103.97,30.76],d:"轉城際列車"},
+   {leg:"城際 30 分＋叫車"},
+   {n:2,t:"09:30",name:"都江堰景區",kw:"都江堰景区",c:"成都",ll:[103.608,31.004],d:"魚嘴、飛沙堰、寶瓶口"},
+   {leg:"步行 5 分",walk:1},
+   {n:3,t:"13:30",name:"南橋／灌縣古城",kw:"都江堰南桥",c:"成都",ll:[103.623,30.993],d:"午餐"},
+   {leg:"城際＋地鐵 約 1.5 小時"},
+   {n:4,t:"19:00",name:"九眼橋河畔",kw:"九眼桥",c:"成都",ll:[104.088,30.642],d:"晚餐、小酒館"}
+  ]},
+ {d:"2026-10-31",tab:"10/31",city:"成都",title:"喝茶、文殊院、蘭桂坊",meta:"週六 · 萬聖節",
+  note:"上午人民公園喝茶，回頭逛飯店旁的文殊院，下午太古里，晚上九眼橋晚餐、蘭桂坊派對。",
+  items:[
+   {...HOTEL_CD,t:"09:45",d:"出發"},
+   {leg:"叫車 12 分"},
+   {n:1,t:"10:00",name:"人民公園 鶴鳴茶社",kw:"鹤鸣茶社",c:"成都",ll:[104.059,30.6585],d:""},
+   {leg:"叫車 10 分"},
+   {n:2,t:"13:00",name:"文殊院",kw:"文殊院",c:"成都",ll:[104.073,30.675],d:"離飯店走路約 10 分"},
+   {leg:"叫車 12 分"},
+   {n:3,t:"15:00",name:"太古里／大慈寺",kw:"成都远洋太古里",c:"成都",ll:[104.0835,30.6545],d:"順便買變裝小物"},
+   {leg:"步行 15 分",walk:1},
+   {n:4,t:"18:30",name:"九眼橋晚餐",kw:"九眼桥",c:"成都",ll:[104.088,30.642],d:""},
+   {leg:"步行 8 分",walk:1},
+   {n:5,t:"21:00",name:"蘭桂坊 萬聖節派對",kw:"成都兰桂坊",c:"成都",ll:[104.0905,30.6478],d:"9:30 前入場"},
+   {leg:"叫車 10 分回飯店"}
+  ]},
+ {d:"2026-11-01",tab:"11/1",city:"成都",title:"彭鎮老茶館 → 回台北",meta:"週日 · 3U3981 雙流 T1 14:40 → 松山 17:45",
+  note:"帶行李一路往西南，喝完茶直接去雙流機場（不是天府機場）。",
+  items:[
+   {...HOTEL_CD,t:"08:00",d:"退房"},
+   {leg:"叫車 約 50 分"},
+   {n:1,t:"09:00",name:"彭鎮觀音閣老茶館",kw:"观音阁老茶馆 彭镇",c:"成都",ll:[103.935,30.495],d:"百年老茶館"},
+   {leg:"叫車 約 30 分"},
+   {f:1,t:"12:00",name:"雙流機場 T1",kw:"成都双流国际机场T1航站楼",c:"成都",ll:[103.947,30.5785],d:"12:40 前完成報到；14:40 起飛"}
+  ]}
+];
+const NEAR=["美食","咖啡","便利店","廁所","地鐵站","藥店","ATM"];
+
+// ---- 高德連結 ----
+// callnative=1：手機有裝高德 App 就直接開 App，沒有就開網頁版
+const amapSearch=(kw,c)=>`https://uri.amap.com/search?keyword=${encodeURIComponent(kw)}${c?`&city=${encodeURIComponent(c)}`:""}&src=yurongxing&callnative=1`;
+const amapNear=(kw,ll)=>`https://uri.amap.com/search?keyword=${encodeURIComponent(kw)}&center=${ll[0]},${ll[1]}&radius=1000&src=yurongxing&callnative=1`;
+const amapNav=(it)=>`https://uri.amap.com/navigation?to=${it.ll[0]},${it.ll[1]},${encodeURIComponent(it.kw)}&mode=car&src=yurongxing&callnative=1`;
+
+// ---- 狀態（打勾）----
+const store={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+let done=store.get("done")||{};
+const todayISO=new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Shanghai"}).format(new Date());
+let cur=Math.max(0,DAYS.findIndex(x=>x.d===todayISO));
+const hashIdx=DAYS.findIndex(x=>"d"+x.d.replace(/-/g,"")===location.hash.slice(1));
+if(hashIdx>=0)cur=hashIdx; else { const s=store.get("tab"); if(DAYS.findIndex(x=>x.d===todayISO)<0 && Number.isInteger(s)) cur=s; }
+
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("on");clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove("on"),1800)}
+
+function renderTabs(){
+  const nav=document.getElementById("tabs");
+  nav.innerHTML=DAYS.map((x,i)=>`<button class="tab" role="tab" id="tab${i}" aria-selected="${i===cur}" data-i="${i}"><b>${x.tab}${x.d===todayISO?'<i class="today">今天</i>':""}</b><span>${esc(x.city)}</span></button>`).join("");
+  nav.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{cur=+b.dataset.i;store.set("tab",cur);render();window.scrollTo({top:0})});
+  const sel=nav.querySelector('[aria-selected="true"]');if(sel)sel.scrollIntoView({inline:"center",block:"nearest"});
+}
+
+function stopCard(it,dayKey,idx){
+  const key=dayKey+":"+idx, isDone=!!done[key];
+  const badge=it.h?'<div class="num h">宿</div>':it.f?'<div class="num f">✈</div>':`<div class="num">${it.n}</div>`;
+  const addr=it.addr?`<div class="addr">${esc(it.addr)}</div>`:"";
+  return `<li class="stop${isDone?" done":""}" data-key="${key}">
+    <div class="top">${badge}
+      <div class="title"><div class="t">${esc(it.t||"")}</div><h3>${esc(it.name)}</h3>${it.d?`<p>${esc(it.d)}</p>`:""}${addr}</div>
+      <input type="checkbox" class="chk" id="chk-${key.replace(/[^\w]/g,"")}" aria-label="已完成" ${isDone?"checked":""}>
+    </div>
+    <div class="btns">
+      <a class="btn main" href="${amapSearch(it.kw,it.c)}" target="_blank" rel="noopener">高德・叫車</a>
+      <a class="btn" href="${amapNav(it)}" target="_blank" rel="noopener">路線</a>
+      <button class="btn" type="button" data-near aria-expanded="false">周邊</button>
+    </div>
+    <div class="near" hidden>
+      ${NEAR.map(k=>`<a class="chip" href="${amapNear(k,it.ll)}" target="_blank" rel="noopener">${k}</a>`).join("")}
+      <button class="chip" type="button" data-copy="${esc(it.addr||it.kw)}">複製店名／地址</button>
+    </div>
+  </li>`;
+}
+
+function render(){
+  renderTabs();
+  const day=DAYS[cur], main=document.getElementById("main");
+  history.replaceState(null,"","#d"+day.d.replace(/-/g,""));
+  main.innerHTML=`<div class="dayhead"><div class="meta">${esc(day.meta)}</div><h2>${esc(day.title)}</h2><p>${esc(day.note)}</p></div>
+  <ol class="list">${day.items.map((it,i)=>it.leg?`<li class="leg${it.walk?" walk":""}">${esc(it.leg)}</li>`:stopCard(it,day.d,i)).join("")}</ol>
+  <div class="info"><h4>怎麼用高德叫車</h4><ul>
+    <li>按「高德・叫車」會打開高德並搜尋這個地點，點選正確的結果後按「打車」，就會以它為目的地叫車。</li>
+    <li>「路線」直接規劃開車路線；座標是概略的，要精準就用「高德・叫車」。</li>
+    <li>「周邊」可以找附近的美食、咖啡、廁所、地鐵站。</li>
+    <li>叫車前先在高德綁好支付寶或微信支付。</li>
+  </ul></div>`;
+  main.querySelectorAll(".chk").forEach(c=>c.onchange=()=>{const li=c.closest(".stop");const k=li.dataset.key;if(c.checked)done[k]=1;else delete done[k];store.set("done",done);li.classList.toggle("done",c.checked)});
+  main.querySelectorAll("[data-near]").forEach(b=>b.onclick=()=>{const n=b.closest(".stop").querySelector(".near");n.hidden=!n.hidden;b.setAttribute("aria-expanded",String(!n.hidden))});
+  main.querySelectorAll("[data-copy]").forEach(b=>b.onclick=()=>{const v=b.dataset.copy;
+    const fallback=()=>{const r=document.createRange();r.selectNodeContents(b);const s=getSelection();s.removeAllRanges();s.addRange(r);toast("已選取，長按複製")};
+    try{navigator.clipboard.writeText(v).then(()=>toast("已複製："+v),fallback)}catch(e){fallback()}});
+}
+render();
+
+// 離線快取（部署到 GitHub Pages 後生效；在預覽環境會自動略過）
+if("serviceWorker" in navigator && location.protocol==="https:" && !/claude/.test(location.hostname)){
+  try{navigator.serviceWorker.register("sw.js").catch(()=>{})}catch(e){}
+}
+</script>
+</body>
+</html>
