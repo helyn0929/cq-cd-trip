@@ -75,7 +75,7 @@ function drawMap(day,onPin){
     const [x,y]=P(p.lat,p.lng), g=el("g",{class:"pt"},svg);
     let off=M.PR+5;
     if(p.k==="hotel"){el("rect",{x:x-14,y:y-14,width:28,height:28,rx:4,class:"r-hotel"},g);const t=el("text",{x,y:y+1,class:"r-hoteltx"},g);t.textContent="宿";off=21}
-    else if(p.k==="bf"){el("rect",{x:x-14,y:y-14,width:28,height:28,rx:4,class:"r-bf"},g);const t=el("text",{x,y:y+1,class:"r-bftx"},g);t.textContent="早";off=21}
+    else if(p.k==="bf"){el("rect",{x:x-14,y:y-14,width:28,height:28,rx:4,class:"r-bf"},g);const t=el("text",{x,y:y+1,class:"r-bftx"},g);t.textContent=p.b||"早";off=21}
     else if(p.k==="city"){el("circle",{cx:x,cy:y,r:10,class:"r-city"},g);off=17}
     else{el("circle",{cx:x,cy:y,r:M.PR,class:"r-pin"+(p.food?" food":"")},g);const t=el("text",{x,y:y+1,class:"r-pinnum"},g);t.textContent=p.n;
       if(onPin){g.style.cursor="pointer";g.addEventListener("click",ev=>{ev.stopPropagation();onPin(p.n)})}}
