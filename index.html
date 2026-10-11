@@ -273,6 +273,31 @@ const NEAR=["美食","咖啡","便利店","廁所","地鐵站","藥店","ATM"];
 const amapSearch=(kw,c)=>`https://uri.amap.com/search?keyword=${encodeURIComponent(kw)}${c?`&city=${encodeURIComponent(c)}`:""}&src=yurongxing&callnative=1`;
 const amapNear=(kw,ll)=>`https://uri.amap.com/search?keyword=${encodeURIComponent(kw)}&center=${ll[0]},${ll[1]}&radius=1000&src=yurongxing&callnative=1`;
 const amapNav=(it)=>`https://uri.amap.com/navigation?to=${it.ll[0]},${it.ll[1]},${encodeURIComponent(it.kw)}&mode=car&src=yurongxing&callnative=1`;
+// 直接開高德 App（iOS: iosamap://，Android: androidamap:// / amapuri://），沒裝 App 才退回網頁版
+const UA=navigator.userAgent, IS_IOS=/iPhone|iPad|iPod/.test(UA)||(/Macintosh/.test(UA)&&"ontouchend" in document), IS_AND=/Android/.test(UA);
+function amapApp(kind,kw,ll,name){
+  const e=encodeURIComponent, sa="sourceApplication=yurongxing";
+  if(IS_IOS){
+    if(kind==="nav")return `iosamap://path?${sa}&dlat=${ll[1]}&dlon=${ll[0]}&dname=${e(name||kw)}&dev=1&t=0`;
+    if(kind==="near")return `iosamap://poi?${sa}&name=${e(kw)}&lat1=${ll[1]-.01}&lon1=${ll[0]-.01}&lat2=${ll[1]+.01}&lon2=${ll[0]+.01}&dev=1`;
+    return `iosamap://poi?${sa}&name=${e(kw)}&dev=0`;
+  }
+  if(IS_AND){
+    if(kind==="nav")return `amapuri://route/plan/?${sa}&dlat=${ll[1]}&dlon=${ll[0]}&dname=${e(name||kw)}&dev=1&t=0`;
+    if(kind==="near")return `androidamap://poi?${sa}&keywords=${e(kw)}&lat=${ll[1]}&lon=${ll[0]}&dev=1`;
+    return `androidamap://poi?${sa}&keywords=${e(kw)}&dev=0`;
+  }
+  return null;
+}
+function openAmap(a){
+  const {kind,kw,c}=a.dataset, ll=a.dataset.ll.split(",").map(Number), web=a.href, app=amapApp(kind,kw,ll,a.dataset.name);
+  if(!app){window.open(web,"_blank","noopener");return}
+  let left=false;const mark=()=>{left=true};
+  document.addEventListener("visibilitychange",mark,{once:true});window.addEventListener("pagehide",mark,{once:true});
+  location.href=app;
+  setTimeout(()=>{if(!left&&!document.hidden){toast("沒偵測到高德 App，改開網頁版");window.open(web,"_blank","noopener")}},1600);
+}
+document.addEventListener("click",ev=>{const a=ev.target.closest("a[data-kind]");if(!a)return;ev.preventDefault();openAmap(a)});
 
 // ---- 狀態（打勾）----
 const store={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
@@ -302,13 +327,13 @@ function stopCard(it,dayKey,idx){
     <div class="title"><div class="t">${esc(it.t||"")}</div>
       <div class="nrow"><h3>${esc(it.name)}</h3>
         <div class="acts">
-          <a class="act main" href="${it.near?amapNear(it.kw,it.ll):amapSearch(it.kw,it.c)}" target="_blank" rel="noopener">高德叫車</a>
-          <a class="act" href="${amapNav(it)}" target="_blank" rel="noopener">路線</a>
+          <a class="act main" href="${it.near?amapNear(it.kw,it.ll):amapSearch(it.kw,it.c)}" data-kind="${it.near?"near":"search"}" data-kw="${esc(it.kw)}" data-ll="${it.ll}" target="_blank" rel="noopener">高德叫車</a>
+          <a class="act" href="${amapNav(it)}" data-kind="nav" data-kw="${esc(it.kw)}" data-name="${esc(it.kw)}" data-ll="${it.ll}" target="_blank" rel="noopener">路線</a>
           <button class="act" type="button" data-near aria-expanded="false">周邊</button>
         </div></div>
       ${it.d?`<p>${esc(it.d)}</p>`:""}${addr}</div>
     <div class="near" hidden>
-      ${NEAR.map(k=>`<a class="chip" href="${amapNear(k,it.ll)}" target="_blank" rel="noopener">${k}</a>`).join("")}
+      ${NEAR.map(k=>`<a class="chip" href="${amapNear(k,it.ll)}" data-kind="near" data-kw="${k}" data-ll="${it.ll}" target="_blank" rel="noopener">${k}</a>`).join("")}
       <button class="chip" type="button" data-copy="${esc(it.addr||it.kw)}">複製店名／地址</button>
     </div>
   </li>`;
@@ -322,11 +347,12 @@ function render(){
   <div class="mapwrap" id="map"></div>
   <div class="maphint"><span><b style="color:var(--food)">●</b> 橘色是美食・點號碼跳到行程</span><button type="button" id="zoom" aria-pressed="false">放大地圖</button></div>
   <ol class="list">${day.items.map((it,i)=>it.leg?`<li class="leg${it.walk?" walk":""}">${esc(it.leg)}</li>`:stopCard(it,day.d,i)).join("")}</ol>
-  <div class="info"><h4>怎麼用高德叫車</h4><ul>
-    <li>按「高德叫車」會打開高德並搜尋這個地點，點選正確的結果後按「打車」，就會以它為目的地叫車。</li>
-    <li>「路線」直接規劃開車路線；座標是概略的，要精準就用「高德叫車」。</li>
-    <li>「周邊」可以找附近的美食、咖啡、廁所、地鐵站。</li>
-    <li>叫車前先在高德綁好支付寶或微信支付。</li>
+  <div class="info"><h4>怎麼用高德</h4><ul>
+    <li>手機要先安裝「高德地圖」App 並登入。按按鈕會直接打開 App；沒裝 App 才會改開網頁版，網頁版不能叫車。</li>
+    <li>「高德叫車」：在高德裡搜尋這個地點，點正確的結果，再按「打車」就能叫車。</li>
+    <li>「路線」：直接規劃開車路線到這個地點（座標是概略的，要精準請用「高德叫車」）。</li>
+    <li>「周邊」：找附近的美食、咖啡、廁所、地鐵站。</li>
+    <li>叫車要在大陸境內才叫得到車，先在高德綁好支付寶或微信支付。</li>
   </ul></div>`;
   try{
     const md=MAPDAYS.find(m=>m.id==="d"+cur), box=document.getElementById("map");
