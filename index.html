@@ -53,6 +53,7 @@ ol.list{list-style:none;margin:0;padding:0;display:grid}
 .stop.done .title,.stop.done .acts{opacity:.45}
 .num{width:28px;height:28px;border-radius:50%;background:var(--route);color:#fff;font:700 14px/28px var(--mono);text-align:center;border:0;padding:0;cursor:pointer;position:relative}
 .num.h{background:var(--ink);color:var(--bg);border-radius:6px;font-family:var(--font);font-size:13px;cursor:default}
+.num.b{background:var(--tag);color:var(--tag-ink);border-radius:6px;font-family:var(--font);font-size:13px;cursor:default}
 .num.f{background:var(--amap);border-radius:6px;font-family:var(--font);font-size:13px;cursor:default}
 .stop.done .num:not(.h):not(.f){background:var(--ok)}
 .stop.done .num:not(.h):not(.f)::after{content:"✓";position:absolute;inset:0;background:var(--ok);border-radius:50%;font-family:var(--font)}
@@ -230,9 +231,11 @@ const DAYS=[
    {n:4,t:"19:00",name:"九眼橋河畔",kw:"九眼桥",c:"成都",ll:[104.088,30.642],d:"晚餐、小酒館"}
   ]},
  {d:"2026-10-31",tab:"10/31",city:"成都",title:"喝茶、文殊院、蘭桂坊",meta:"週六 · 萬聖節",
-  note:"上午人民公園喝茶，回頭逛飯店旁的文殊院，下午太古里，晚上九眼橋晚餐、蘭桂坊派對。",
+  note:"早上先吃一碗菜市場的肥腸結子粉，再去人民公園喝茶，回頭逛飯店旁的文殊院，下午太古里，晚上九眼橋晚餐、蘭桂坊派對。",
   items:[
-   {...HOTEL_CD,t:"09:45",d:"出發"},
+   {...HOTEL_CD,t:"08:15",d:"出發"},
+   {leg:"附近找"},
+   {b:"早",t:"08:30",name:"菜市場肥腸結子粉",kw:"肥肠粉",c:"成都",near:1,ll:[104.0790,30.6690],d:"早餐。按「高德叫車」會搜飯店附近的肥腸粉，挑開在菜市場裡的"},
    {leg:"叫車 12 分"},
    {n:1,t:"10:00",name:"人民公園 鶴鳴茶社",kw:"鹤鸣茶社",c:"成都",ll:[104.059,30.6585],d:""},
    {leg:"叫車 10 分"},
@@ -284,14 +287,14 @@ function renderTabs(){
 function stopCard(it,dayKey,idx){
   const key=dayKey+":"+idx, isDone=!!done[key];
   const sid=it.n?` id="stop-${it.n}"`:"";
-  const badge=it.h?'<div class="num h" aria-hidden="true">宿</div>':it.f?'<div class="num f" aria-hidden="true">✈</div>':`<button type="button" class="num" data-done aria-pressed="${isDone}" aria-label="第 ${it.n} 站，點一下標記已去過">${it.n}</button>`;
+  const badge=it.b?`<div class="num b" aria-hidden="true">${it.b}</div>`:it.h?'<div class="num h" aria-hidden="true">宿</div>':it.f?'<div class="num f" aria-hidden="true">✈</div>':`<button type="button" class="num" data-done aria-pressed="${isDone}" aria-label="第 ${it.n} 站，點一下標記已去過">${it.n}</button>`;
   const addr=it.addr?`<div class="addr">${esc(it.addr)}</div>`:"";
   return `<li class="stop${isDone?" done":""}"${sid} data-key="${key}">
     ${badge}
     <div class="title"><div class="t">${esc(it.t||"")}</div>
       <div class="nrow"><h3>${esc(it.name)}</h3>
         <div class="acts">
-          <a class="act main" href="${amapSearch(it.kw,it.c)}" target="_blank" rel="noopener">高德叫車</a>
+          <a class="act main" href="${it.near?amapNear(it.kw,it.ll):amapSearch(it.kw,it.c)}" target="_blank" rel="noopener">高德叫車</a>
           <a class="act" href="${amapNav(it)}" target="_blank" rel="noopener">路線</a>
           <button class="act" type="button" data-near aria-expanded="false">周邊</button>
         </div></div>
