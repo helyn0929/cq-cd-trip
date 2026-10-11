@@ -75,11 +75,12 @@ function drawMap(day,onPin){
     const [x,y]=P(p.lat,p.lng), g=el("g",{class:"pt"},svg);
     let off=M.PR+5;
     if(p.k==="hotel"){el("rect",{x:x-14,y:y-14,width:28,height:28,rx:4,class:"r-hotel"},g);const t=el("text",{x,y:y+1,class:"r-hoteltx"},g);t.textContent="宿";off=21}
+    else if(p.k==="bf"){el("rect",{x:x-14,y:y-14,width:28,height:28,rx:4,class:"r-bf"},g);const t=el("text",{x,y:y+1,class:"r-bftx"},g);t.textContent="早";off=21}
     else if(p.k==="city"){el("circle",{cx:x,cy:y,r:10,class:"r-city"},g);off=17}
     else{el("circle",{cx:x,cy:y,r:M.PR,class:"r-pin"},g);const t=el("text",{x,y:y+1,class:"r-pinnum"},g);t.textContent=p.n;
       if(onPin){g.style.cursor="pointer";g.addEventListener("click",ev=>{ev.stopPropagation();onPin(p.n)})}}
     if(p.nolabel)return;
-    const name=p.k==="hotel"?p.name:shortName(p.name), w=tw(name,M.FT)+16, th=32;
+    const name=p.k==="hotel"||p.k==="bf"?p.name:shortName(p.name), w=tw(name,M.FT)+16, th=32;
     const cand=s=>{switch(s){case"l":return{x:x-off-w,y:y-th/2};case"t":return{x:x-w/2,y:y-off-th};case"b":return{x:x-w/2,y:y+off};default:return{x:x+off,y:y-th/2}}};
     const order=[p.side||"r",...["r","l","t","b"].filter(q=>q!==(p.side||"r"))];
     let best=null;for(const q of order){const c=cand(q),b={x:c.x,y:c.y,w,h:th},k=cost(b);if(!best||k<best.k-1)best={...b,k};if(k===0)break}

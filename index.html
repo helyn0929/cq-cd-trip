@@ -108,6 +108,7 @@ ol.list{list-style:none;margin:0;padding:0;display:grid}
 .r-hoteltx{fill:var(--paper);font:700 15px var(--body);text-anchor:middle;dominant-baseline:central}
 .r-city{fill:var(--paper);stroke:var(--ink);stroke-width:3.5}
 .r-tag{fill:var(--tag)} .r-tagtx{fill:var(--tag-ink);font:700 22px var(--body);dominant-baseline:central}
+.r-bf{fill:var(--tag);stroke:var(--paper);stroke-width:2.5} .r-bftx{fill:var(--tag-ink);font:700 15px var(--body);text-anchor:middle;dominant-baseline:central}
 .r-tag.hotel{fill:var(--ink)} .r-tagtx.hotel{fill:var(--paper)}
 .r-scale{stroke:var(--ink);stroke-width:2.5;fill:none}
 .r-scaletx{fill:var(--muted);font:700 15px var(--mono)} .r-n{fill:var(--ink)}
@@ -231,11 +232,11 @@ const DAYS=[
    {n:4,t:"19:00",name:"九眼橋河畔",kw:"九眼桥",c:"成都",ll:[104.088,30.642],d:"晚餐、小酒館"}
   ]},
  {d:"2026-10-31",tab:"10/31",city:"成都",title:"喝茶、文殊院、蘭桂坊",meta:"週六 · 萬聖節",
-  note:"早上先吃一碗菜市場的肥腸結子粉，再去人民公園喝茶，回頭逛飯店旁的文殊院，下午太古里，晚上九眼橋晚餐、蘭桂坊派對。",
+  note:"早上先到撫琴吃朱碧瓊肥腸粉加結子，再去人民公園喝茶，回頭逛飯店旁的文殊院，下午太古里，晚上九眼橋晚餐、蘭桂坊派對。",
   items:[
    {...HOTEL_CD,t:"08:15",d:"出發"},
-   {leg:"附近找"},
-   {b:"早",t:"08:30",name:"菜市場肥腸結子粉",kw:"肥肠粉",c:"成都",near:1,ll:[104.0790,30.6690],d:"早餐。按「高德叫車」會搜飯店附近的肥腸粉，挑開在菜市場裡的"},
+   {leg:"叫車 12 分"},
+   {b:"早",t:"08:30",name:"朱碧瓊肥腸粉",kw:"朱碧琼肥肠粉",c:"成都",ll:[104.0430,30.6745],d:"撫琴小區菜市場旁的老店，點肥腸粉加結子",addr:"成都市金牛区抚琴街南三巷"},
    {leg:"叫車 12 分"},
    {n:1,t:"10:00",name:"人民公園 鶴鳴茶社",kw:"鹤鸣茶社",c:"成都",ll:[104.059,30.6585],d:""},
    {leg:"叫車 10 分"},
