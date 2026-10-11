@@ -52,13 +52,27 @@ function drawMap(day,onPin){
   el("path",{d:"M0,0 L10,5 L0,10 z",class:"r-head"},mk);
   const mPerPx=111000/s;
   drawBase(svg,day,P,s,W,H,mPerPx);
-  const legG=el("g",{},svg), labG=el("g",{},svg), legLabels=[], boxes=[];
+  // ---- 版面：先把太近的點推開，再放標籤，避免重疊 ----
+  const legG=el("g",{},svg), pinG=el("g",{},svg), labG=el("g",{},svg);
+  const hard=[], soft=[];
   const ov=(a,b)=>Math.max(0,Math.min(a.x+a.w,b.x+b.w)-Math.max(a.x,b.x))*Math.max(0,Math.min(a.y+a.h,b.y+b.h)-Math.max(a.y,b.y));
-  const cost=b=>boxes.reduce((s,o)=>s+ov(b,o),0)+(b.x<2||b.x+b.w>W-2||b.y<2||b.y+b.h>H-2?5000:0);
-  boxes.push({x:14,y:H-62,w:140,h:52},{x:W-56,y:8,w:48,h:60});
-  pts.forEach(p=>{if(p.k==="opt")return;const [x,y]=P(p.lat,p.lng),r=M.PR;boxes.push({x:x-r,y:y-r,w:2*r,h:2*r})});
+  const oob=b=>b.x<4||b.x+b.w>W-4||b.y<4||b.y+b.h>H-4;
+  const hcost=b=>oob(b)?1e9:hard.reduce((s,o)=>s+ov(b,o),0);
+  const scost=b=>soft.reduce((s,o)=>s+ov(b,o),0);
+  hard.push({x:14,y:H-62,w:150,h:52},{x:W-56,y:8,w:48,h:60});
+  const vis=pts.map(p=>p.k!=="opt");
+  const pos=pts.map(p=>P(p.lat,p.lng));
+  const R0=M.PR+5, minD=2*R0;
+  for(let it=0;it<60;it++){let moved=false;
+    for(let i=0;i<pos.length;i++)for(let j=i+1;j<pos.length;j++){if(!vis[i]||!vis[j])continue;
+      const dx=pos[j][0]-pos[i][0],dy=pos[j][1]-pos[i][1],d=Math.hypot(dx,dy);
+      if(d<minD){const ux=d?dx/d:1,uy=d?dy/d:0,push=(minD-d)/2+.5;
+        pos[i]=[pos[i][0]-ux*push,pos[i][1]-uy*push];pos[j]=[pos[j][0]+ux*push,pos[j][1]+uy*push];moved=true}}
+    if(!moved)break}
+  pos.forEach((q,i)=>{if(vis[i])hard.push({x:q[0]-R0,y:q[1]-R0,w:2*R0,h:2*R0})});
+  const legLabels=[];
   day.legs.forEach(([a,b,mode,label,o={}],i)=>{
-    const [x1,y1]=P(pts[a].lat,pts[a].lng),[x2,y2]=P(pts[b].lat,pts[b].lng);
+    const [x1,y1]=pos[a],[x2,y2]=pos[b];
     const dx=x2-x1,dy=y2-y1,L=Math.hypot(dx,dy)||1,nx=-dy/L,ny=dx/L;
     const bend=(o.bend!=null?o.bend*Math.min(L,420):.18*Math.min(L,260)*(i%2?-1:1));
     const cx=(x1+x2)/2+nx*bend, cy=(y1+y2)/2+ny*bend;
@@ -67,32 +81,59 @@ function drawMap(day,onPin){
     const d=`M${a1.toFixed(1)},${b1.toFixed(1)} Q${cx.toFixed(1)},${cy.toFixed(1)} ${a2.toFixed(1)},${b2.toFixed(1)}`;
     el("path",{d,class:"r-leg"+(mode==="walk"?" walk":""),"stroke-width":mode==="rail"?6.5:4.2,"marker-end":`url(#ah-${day.id})`},legG);
     if(mode==="rail")el("path",{d,class:"r-rail-in"},legG);
-    if(label&&!o.hide){const mx=.25*x1+.5*cx+.25*x2,my=.25*y1+.5*cy+.25*y2,sg=Math.sign(bend||1);
-      legLabels.push({x:mx+nx*sg*15,y:my+ny*sg*15,label})}
+    const Q=t=>[(1-t)*(1-t)*x1+2*(1-t)*t*cx+t*t*x2,(1-t)*(1-t)*y1+2*(1-t)*t*cy+t*t*y2];
+    const n=Math.max(2,Math.ceil(L/12));for(let k=1;k<n;k++){const [px,py]=Q(k/n);soft.push({x:px-5,y:py-5,w:10,h:10})}
+    if(label&&!o.hide)legLabels.push({Q,nx,ny,sg:Math.sign(bend||1),label});
   });
-  pts.forEach(p=>{
-    if(p.k==="opt")return;
-    const [x,y]=P(p.lat,p.lng), g=el("g",{class:"pt"},svg);
-    let off=M.PR+5;
-    if(p.k==="hotel"){el("rect",{x:x-14,y:y-14,width:28,height:28,rx:4,class:"r-hotel"},g);const t=el("text",{x,y:y+1,class:"r-hoteltx"},g);t.textContent="宿";off=21}
-    else if(p.k==="bf"){el("rect",{x:x-14,y:y-14,width:28,height:28,rx:4,class:"r-bf"},g);const t=el("text",{x,y:y+1,class:"r-bftx"},g);t.textContent=p.b||"早";off=21}
-    else if(p.k==="city"){el("circle",{cx:x,cy:y,r:10,class:"r-city"},g);off=17}
+  // 點
+  const DIRS=[["r",1,0],["l",-1,0],["t",0,-1],["b",0,1],["tr",1,-1],["br",1,1],["tl",-1,-1],["bl",-1,1]];
+  const order=pts.map((p,i)=>i).filter(i=>vis[i]).sort((a,b)=>{const r=p=>p.k==="hotel"?0:p.n?1:2;return r(pts[a])-r(pts[b])||(pts[a].n||0)-(pts[b].n||0)});
+  const groups={};
+  pts.forEach((p,i)=>{
+    if(!vis[i])return;
+    const [x,y]=pos[i], g=el("g",{class:"pt"},pinG);groups[i]=g;
+    if(p.k==="hotel"){el("rect",{x:x-14,y:y-14,width:28,height:28,rx:4,class:"r-hotel"},g);const t=el("text",{x,y:y+1,class:"r-hoteltx"},g);t.textContent="宿"}
+    else if(p.k==="bf"){el("rect",{x:x-14,y:y-14,width:28,height:28,rx:4,class:"r-bf"},g);const t=el("text",{x,y:y+1,class:"r-bftx"},g);t.textContent=p.b||"早"}
+    else if(p.k==="city"){el("circle",{cx:x,cy:y,r:10,class:"r-city"},g)}
     else{el("circle",{cx:x,cy:y,r:M.PR,class:"r-pin"+(p.food?" food":"")},g);const t=el("text",{x,y:y+1,class:"r-pinnum"},g);t.textContent=p.n;
       if(onPin){g.style.cursor="pointer";g.addEventListener("click",ev=>{ev.stopPropagation();onPin(p.n)})}}
-    if(p.nolabel)return;
-    const name=p.k==="hotel"||p.k==="bf"?p.name:shortName(p.name), w=tw(name,M.FT)+16, th=32;
-    const cand=s=>{switch(s){case"l":return{x:x-off-w,y:y-th/2};case"t":return{x:x-w/2,y:y-off-th};case"b":return{x:x-w/2,y:y+off};default:return{x:x+off,y:y-th/2}}};
-    const order=[p.side||"r",...["r","l","t","b"].filter(q=>q!==(p.side||"r"))];
-    let best=null;for(const q of order){const c=cand(q),b={x:c.x,y:c.y,w,h:th},k=cost(b);if(!best||k<best.k-1)best={...b,k};if(k===0)break}
-    if(best.k>w*th*.25&&p.k!=="hotel")return;
-    boxes.push(best);let bx=Math.max(4,Math.min(W-w-4,best.x)),by=best.y;
-    const kind=p.k==="hotel"?" hotel":(p.food||p.k==="bf")?" food":"";
-    el("rect",{x:bx,y:by,width:w,height:th,rx:3,class:"r-tag"+kind},g);
-    const t=el("text",{x:bx+8,y:by+th/2+1,class:"r-tagtx"+kind},g);t.textContent=name;
   });
-  legLabels.forEach(l=>{const w=tw(l.label,M.FL)+6,b={x:l.x-w/2,y:l.y-M.FL/2-4,w,h:M.FL+4};if(cost(b)>0)return;boxes.push(b);
-    const t=el("text",{x:l.x.toFixed(1),y:(l.y+6).toFixed(1),class:"r-leglabel","text-anchor":"middle"},labG);t.textContent=l.label});
-  svg.appendChild(labG);
+  order.forEach(i=>{
+    const p=pts[i];if(p.nolabel)return;
+    const [x,y]=pos[i], name=p.k==="hotel"||p.k==="bf"?p.name:shortName(p.name);
+    const pref=p.side||"r";
+    const dirs=[...DIRS].sort((a,b)=>(b[0]===pref)-(a[0]===pref));
+    let best=null;
+    for(const fs of [M.FT,19,16]){
+      const w=tw(name,fs)+fs*.7, th=Math.round(fs*1.45);
+      for(const extra of [0,10,22])for(const [dn,ux,uy] of dirs){
+        const off=R0+3+extra, bx=ux>0?x+off*(uy?.75:1):ux<0?x-off*(uy?.75:1)-w:x-w/2, by=uy>0?y+off*(ux?.75:1):uy<0?y-off*(ux?.75:1)-th:y-th/2;
+        const b={x:bx,y:by,w,h:th}, hc=hcost(b);if(hc>0)continue;
+        const sc=scost(b)+extra*3+(dn===pref?0:15)+(fs<M.FT?(M.FT-fs)*60:0);
+        if(!best||sc<best.sc)best={...b,sc,fs};
+      }
+      if(best&&best.sc<200)break;
+    }
+    if(!best)return;
+    hard.push(best);
+    const kind=p.k==="hotel"?" hotel":(p.food||p.k==="bf")?" food":"";
+    const g=groups[i];
+    const nx0=Math.max(best.x,Math.min(x,best.x+best.w)),ny0=Math.max(best.y,Math.min(y,best.y+best.h));
+    if(Math.hypot(nx0-x,ny0-y)>R0+8)g.insertBefore(el("line",{x1:x,y1:y,x2:nx0,y2:ny0,class:"r-leader"}),g.firstChild);
+    el("rect",{x:best.x,y:best.y,width:best.w,height:best.h,rx:3,class:"r-tag"+kind},g);
+    const t=el("text",{x:best.x+best.fs*.35,y:best.y+best.h/2+1,class:"r-tagtx"+kind,style:`font-size:${best.fs}px`},g);t.textContent=name;
+  });
+  legLabels.forEach(l=>{
+    for(const fs of [M.FL,15]){
+      const w=tw(l.label,fs)+6,h=fs+4;
+      for(const t of [.5,.42,.58,.34,.66])for(const side of [l.sg,-l.sg])for(const d of [15,24]){
+        const [px,py]=l.Q(t), cx=px+l.nx*side*d, cy=py+l.ny*side*d, b={x:cx-w/2,y:cy-h/2,w,h};
+        if(hcost(b)>0)continue;
+        hard.push(b);const e=el("text",{x:cx.toFixed(1),y:(cy+fs*.35).toFixed(1),class:"r-leglabel","text-anchor":"middle",style:`font-size:${fs}px`},labG);e.textContent=l.label;
+        return;
+      }
+    }
+  });
   const nice=[100,200,500,1000,2000,5000,10000,20000,50000,100000],m=nice.find(v=>v/mPerPx>=90)||100000,px=m/mPerPx;
   el("path",{d:`M22,${H-30} v8 h${px.toFixed(1)} v-8`,class:"r-scale"},svg);
   const st=el("text",{x:22,y:H-38,class:"r-scaletx"},svg);st.textContent=m>=1000?`${m/1000} 公里`:`${m} 公尺`;
