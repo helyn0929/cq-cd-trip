@@ -47,30 +47,31 @@ main{padding:14px 16px calc(env(safe-area-inset-bottom,0px) + 40px);max-width:64
 .dayhead .meta{color:var(--muted);font-size:13px;font-family:var(--mono)}
 .dayhead p{margin:8px 0 14px;color:var(--muted);font-size:14.5px}
 ol.list{list-style:none;margin:0;padding:0;display:grid}
-.stop{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 12px 10px;display:grid;gap:8px}
-.stop.done{opacity:.55}
-.top{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:start}
-.num{width:26px;height:26px;border-radius:50%;background:var(--route);color:#fff;font:700 13px/26px var(--mono);text-align:center}
-.num.h{background:var(--ink);color:var(--card);border-radius:6px;font-family:var(--font);font-size:12px}
-.num.f{background:var(--amap);border-radius:6px;font-family:var(--font);font-size:12px}
-.title{min-width:0}
-.title .t{font-family:var(--mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
-.title h3{margin:0;font-size:17px;line-height:1.3}
+.stop{display:grid;grid-template-columns:30px minmax(0,1fr) auto;column-gap:12px;row-gap:8px;align-items:start;padding:10px 8px;margin:0 -8px;border-radius:12px;transition:background .2s}
+.stop.flash,.stop:focus-within{background:var(--card)}
+.stop.flash{box-shadow:0 0 0 2px var(--tag)}
+.stop.done .title,.stop.done .acts{opacity:.45}
+.num{width:28px;height:28px;border-radius:50%;background:var(--route);color:#fff;font:700 14px/28px var(--mono);text-align:center;border:0;padding:0;cursor:pointer;position:relative}
+.num.h{background:var(--ink);color:var(--bg);border-radius:6px;font-family:var(--font);font-size:13px;cursor:default}
+.num.f{background:var(--amap);border-radius:6px;font-family:var(--font);font-size:13px;cursor:default}
+.stop.done .num:not(.h):not(.f){background:var(--ok)}
+.stop.done .num:not(.h):not(.f)::after{content:"✓";position:absolute;inset:0;background:var(--ok);border-radius:50%;font-family:var(--font)}
+.title{min-width:0;padding-top:1px}
+.title .t{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.title h3{margin:1px 0 0;font-size:17px;line-height:1.3;font-weight:800}
 .title p{margin:3px 0 0;color:var(--muted);font-size:13.5px}
-.title .addr{font-size:12.5px;margin-top:4px;color:var(--muted)}
-.chk{appearance:none;width:24px;height:24px;border:2px solid var(--line);border-radius:7px;margin:1px 0 0;cursor:pointer;display:grid;place-content:center}
-.chk:checked{background:var(--ok);border-color:var(--ok)}
-.chk:checked::after{content:"✓";color:#fff;font-size:15px;font-weight:700}
-.btns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
-.btn{display:flex;align-items:center;justify-content:center;gap:5px;min-height:40px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;font-size:14px;font-weight:600;text-decoration:none;cursor:pointer;padding:0 6px;text-align:center;line-height:1.2}
-.btn.main{background:var(--amap);border-color:var(--amap);color:#fff}
-.btn:active{transform:scale(.98)}
-.btn:focus-visible,.tab:focus-visible,.chk:focus-visible,.chip:focus-visible{outline:2px solid var(--amap);outline-offset:2px}
-.near{display:flex;flex-wrap:wrap;gap:6px;padding-top:2px}
+.title .addr{font-size:12.5px;margin-top:3px;color:var(--muted)}
+.acts{display:flex;flex-direction:column;align-items:stretch;gap:5px;padding-top:2px;width:96px}
+.act{display:inline-flex;align-items:center;justify-content:center;gap:3px;min-height:26px;padding:0 10px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit;font-size:12.5px;font-weight:600;text-decoration:none;white-space:nowrap;cursor:pointer;line-height:1}
+.act.main{background:var(--amap);border-color:var(--amap);color:#fff}
+.act[aria-expanded="true"]{border-color:var(--ink)}
+.act:active{transform:scale(.97)}
+.act:focus-visible,.tab:focus-visible,.num:focus-visible,.chip:focus-visible{outline:2px solid var(--amap);outline-offset:2px}
+.near{grid-column:2 / -1;display:flex;flex-wrap:wrap;gap:6px}
 .near[hidden]{display:none}
-.chip{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:5px 11px;font-size:13.5px;text-decoration:none}
-.leg{display:flex;align-items:center;gap:8px;padding:6px 0 6px 24px;color:var(--route);font-size:13px;font-weight:600}
-.leg::before{content:"";width:0;height:18px;border-left:2px solid var(--route)}
+.chip{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:4px 11px;font-size:13px;text-decoration:none;font-family:inherit;cursor:pointer}
+.leg{display:flex;align-items:center;gap:10px;padding:0 0 0 13px;color:var(--route);font-size:13.5px;font-weight:600;min-height:30px}
+.leg::before{content:"";width:0;height:24px;border-left:2.5px solid var(--route)}
 .leg.walk::before{border-left-style:dashed}
 .info{margin-top:22px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-size:13.5px;color:var(--muted)}
 .info h4{margin:0 0 6px;color:var(--ink);font-size:14px}
@@ -80,7 +81,6 @@ ol.list{list-style:none;margin:0;padding:0;display:grid}
 .mapwrap.zoom svg{width:200%}
 .maphint{font-size:12px;color:var(--muted);margin:0 0 14px;display:flex;justify-content:space-between;gap:8px}
 .maphint button{border:0;background:none;color:var(--amap);font:inherit;font-size:12.5px;font-weight:600;padding:0;cursor:pointer}
-.stop.flash{box-shadow:0 0 0 3px var(--tag)}
 .r-river{fill:none;stroke:var(--water);stroke-linecap:round;stroke-linejoin:round}
 .r-riveredge{fill:none;stroke:var(--water-edge);stroke-linecap:round;stroke-linejoin:round}
 .r-rivername{fill:var(--muted);font:600 17px var(--body);letter-spacing:.3em;opacity:.85}
@@ -282,17 +282,15 @@ function renderTabs(){
 function stopCard(it,dayKey,idx){
   const key=dayKey+":"+idx, isDone=!!done[key];
   const sid=it.n?` id="stop-${it.n}"`:"";
-  const badge=it.h?'<div class="num h">宿</div>':it.f?'<div class="num f">✈</div>':`<div class="num">${it.n}</div>`;
+  const badge=it.h?'<div class="num h" aria-hidden="true">宿</div>':it.f?'<div class="num f" aria-hidden="true">✈</div>':`<button type="button" class="num" data-done aria-pressed="${isDone}" aria-label="第 ${it.n} 站，點一下標記已去過">${it.n}</button>`;
   const addr=it.addr?`<div class="addr">${esc(it.addr)}</div>`:"";
   return `<li class="stop${isDone?" done":""}"${sid} data-key="${key}">
-    <div class="top">${badge}
-      <div class="title"><div class="t">${esc(it.t||"")}</div><h3>${esc(it.name)}</h3>${it.d?`<p>${esc(it.d)}</p>`:""}${addr}</div>
-      <input type="checkbox" class="chk" id="chk-${key.replace(/[^\w]/g,"")}" aria-label="已完成" ${isDone?"checked":""}>
-    </div>
-    <div class="btns">
-      <a class="btn main" href="${amapSearch(it.kw,it.c)}" target="_blank" rel="noopener">高德・叫車</a>
-      <a class="btn" href="${amapNav(it)}" target="_blank" rel="noopener">路線</a>
-      <button class="btn" type="button" data-near aria-expanded="false">周邊</button>
+    ${badge}
+    <div class="title"><div class="t">${esc(it.t||"")}</div><h3>${esc(it.name)}</h3>${it.d?`<p>${esc(it.d)}</p>`:""}${addr}</div>
+    <div class="acts">
+      <a class="act main" href="${amapSearch(it.kw,it.c)}" target="_blank" rel="noopener">高德叫車 ↗</a>
+      <a class="act" href="${amapNav(it)}" target="_blank" rel="noopener">路線 ↗</a>
+      <button class="act" type="button" data-near aria-expanded="false">周邊</button>
     </div>
     <div class="near" hidden>
       ${NEAR.map(k=>`<a class="chip" href="${amapNear(k,it.ll)}" target="_blank" rel="noopener">${k}</a>`).join("")}
@@ -307,11 +305,11 @@ function render(){
   history.replaceState(null,"","#d"+day.d.replace(/-/g,""));
   main.innerHTML=`<div class="dayhead"><div class="meta">${esc(day.meta)}</div><h2>${esc(day.title)}</h2><p>${esc(day.note)}</p></div>
   <div class="mapwrap" id="map"></div>
-  <div class="maphint"><span>點地圖上的號碼，會跳到那個行程</span><button type="button" id="zoom" aria-pressed="false">放大地圖</button></div>
+  <div class="maphint"><span>點地圖號碼跳到行程・點清單號碼標記已去過</span><button type="button" id="zoom" aria-pressed="false">放大地圖</button></div>
   <ol class="list">${day.items.map((it,i)=>it.leg?`<li class="leg${it.walk?" walk":""}">${esc(it.leg)}</li>`:stopCard(it,day.d,i)).join("")}</ol>
   <div class="info"><h4>怎麼用高德叫車</h4><ul>
-    <li>按「高德・叫車」會打開高德並搜尋這個地點，點選正確的結果後按「打車」，就會以它為目的地叫車。</li>
-    <li>「路線」直接規劃開車路線；座標是概略的，要精準就用「高德・叫車」。</li>
+    <li>按「高德叫車」會打開高德並搜尋這個地點，點選正確的結果後按「打車」，就會以它為目的地叫車。</li>
+    <li>「路線」直接規劃開車路線；座標是概略的，要精準就用「高德叫車」。</li>
     <li>「周邊」可以找附近的美食、咖啡、廁所、地鐵站。</li>
     <li>叫車前先在高德綁好支付寶或微信支付。</li>
   </ul></div>`;
@@ -323,7 +321,7 @@ function render(){
     const zb=document.getElementById("zoom");
     zb.onclick=()=>{const z=box.classList.toggle("zoom");zb.textContent=z?"縮小地圖":"放大地圖";zb.setAttribute("aria-pressed",String(z))};
   }catch(e){const m=document.getElementById("map");if(m)m.hidden=true}
-  main.querySelectorAll(".chk").forEach(c=>c.onchange=()=>{const li=c.closest(".stop");const k=li.dataset.key;if(c.checked)done[k]=1;else delete done[k];store.set("done",done);li.classList.toggle("done",c.checked)});
+  main.querySelectorAll("[data-done]").forEach(b=>b.onclick=()=>{const li=b.closest(".stop"),k=li.dataset.key,on=!done[k];if(on)done[k]=1;else delete done[k];store.set("done",done);li.classList.toggle("done",on);b.setAttribute("aria-pressed",String(on));toast(on?"已標記去過":"已取消標記")});
   main.querySelectorAll("[data-near]").forEach(b=>b.onclick=()=>{const n=b.closest(".stop").querySelector(".near");n.hidden=!n.hidden;b.setAttribute("aria-expanded",String(!n.hidden))});
   main.querySelectorAll("[data-copy]").forEach(b=>b.onclick=()=>{const v=b.dataset.copy;
     const fallback=()=>{const r=document.createRange();r.selectNodeContents(b);const s=getSelection();s.removeAllRanges();s.addRange(r);toast("已選取，長按複製")};
